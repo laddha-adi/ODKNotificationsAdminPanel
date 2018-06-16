@@ -1,110 +1,131 @@
 package Controller;
 
 import Model.Group;
+import Model.Worker;
 import com.google.firebase.database.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Orientation;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.util.Callback;
 
- import java.net.URL;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class MainController implements Initializable {
 
     // public ListView<String> groupListView;
-    public BorderPane content;
+    public AnchorPane content;
     public Label mainHeading;
-    public TreeTableView tableView;
-    public TreeTableColumn col1;
+    public ProgressIndicator progressIndicator;
+    public TitledPane dashboard_tp;
+    public TitledPane createNotification_tp;
+    public TitledPane groups_tp;
+    public TitledPane settings_tp;
+    public ListView listView;
     private TreeItem<String> dashboard;
     private TreeItem<String> createNotification;
     private TreeItem<String> settings;
     private TreeItem<String> groupRoot;
     private TreeItem<String> root;
+    private ArrayList<Group> groupArrayList;
+
     @FXML
     private TreeView<String> locationTreeView;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         //    groupListView.getItems().addAll(getGroupsNames(getGroups()));
-        loadTreeItems();
+        progressIndicator.setProgress(-1.0f);
+        progressIndicator.setVisible(true);
+        //loadTreeItems();
         getGroups();
+        progressIndicator.setProgress(1.0f);
+        progressIndicator.setVisible(false);
+
+        ArrayList<String> list = new ArrayList<>();
+
+
+        listView.setCellFactory(new Callback<ListView<Group>, ListCell<Group>>() {
+            @Override
+            public ListCell<Group> call(ListView<Group> param) {
+                ListCell<Group> cell = new ListCell<Group>(){
+
+                    @Override
+                    protected void updateItem(Group notificationGroup, boolean bln) {
+                        super.updateItem(notificationGroup, bln);
+                        if (notificationGroup != null) {
+                            setText(notificationGroup.getName());
+                        }
+                    }
+
+                };
+                return cell;
+            }
+
+        });
+        listView.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                Group selected =(Group)listView.getSelectionModel().getSelectedItem();
+                NotificationGroupButtonClicked(selected);
+            }
+        });
     }
 
-    public void mouseClick(MouseEvent mouseEvent) {
-        TreeItem item = locationTreeView.getSelectionModel().getSelectedItem();
-        if (item.equals(dashboard)) {
-            dashboardButtonClicked();
-        } else if (item.equals(createNotification)) {
-            createNotificationButtonClicked();
-        } else if (item.equals(settings)) {
-            settingsButtonClicked();
-        }
-        else if(item.equals(groupRoot)){
-            createGroupButtonClicked();
-        }
-        else{
-            NotificationGroupButtonClicked((String)item.getValue());
-        }
-        System.out.println(item + " clicked");
-    }
 
-    private void NotificationGroupButtonClicked(String value) {
-        System.out.println(value + " Group button clicked");
-        mainHeading.setText(value);
+    private void NotificationGroupButtonClicked(Group group) {
+        System.out.println(group.getName() + " Group button clicked");
+        mainHeading.setText(group.getName());
         try {
-            content.getChildren().clear();
-            content.getChildren().add(FXMLLoader.load(Objects.requireNonNull(getClass().getClassLoader().getResource("fxml/Group.fxml"))));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Group.fxml"));
+            fxmlLoader.setController(new SingleGroupController(group));
+            setCenterScene(fxmlLoader);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-
-    private void loadTreeItems() {
-
-        dashboard = new TreeItem<>("Dashboard");
-        createNotification = new TreeItem<>("Create Notification");
-        settings = new TreeItem<>("Settings");
-
-        groupRoot = new TreeItem<String>("Groups");
-        groupRoot.setExpanded(false);
-
-        root = new TreeItem<String>("Root Node");
-        root.getChildren().addAll(dashboard, createNotification, groupRoot, settings);
-        locationTreeView.setRoot(root);
-        locationTreeView.setShowRoot(false);
-    }
-
     private ArrayList<String> getGroupsNames(ArrayList<Group> groups) {
         ArrayList<String> groupNameList = new ArrayList<>();
         for (Group group : groups) {
-            groupNameList.add(group.getId());
+            groupNameList.add(group.getName());
         }
         return groupNameList;
     }
 
     private void getGroups() {
-        ArrayList<Group> groupArrayList = new ArrayList<>();
+        groupArrayList = new ArrayList<>();
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference ref = database.getReference().child("group");
         ref.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                groupRoot.getChildren().clear();
+                groupArrayList.clear();
                 for (DataSnapshot singleGroup: snapshot.getChildren()){
-                    Group newGroup = new Group((String)singleGroup.child("id").getValue(),(String)singleGroup.child("name").getValue());
+                    ArrayList<String> workerIdArrayList = new ArrayList();
+                    for(DataSnapshot workerSnapshot : singleGroup.child("members").getChildren()){
+                        workerIdArrayList.add((String)workerSnapshot.getValue());
+                    }
+                    Group newGroup = new Group((String)singleGroup.child("id").getValue(),(String)singleGroup.child("name").getValue(),workerIdArrayList);
                     groupArrayList.add(newGroup);
                     System.out.println(newGroup.getName());
-                    groupRoot.getChildren().add(new TreeItem<>(newGroup.getName()));
                 }
+
+                listView.setItems(FXCollections.observableList(groupArrayList));
+                updateListView(getGroupsNames(groupArrayList));
             }
 
             @Override
@@ -114,47 +135,67 @@ public class MainController implements Initializable {
         });
     }
 
+    private void updateListView(ArrayList<String> groupsNames) {
+        ObservableList<String>observableList = FXCollections.observableList(groupsNames);
+       // listView.setItems(observableList);
+        System.out.print(String.valueOf(groupsNames));
+    }
+
+    @FXML
     private void dashboardButtonClicked() {
         System.out.println("Dashboard Button Clicked");
         mainHeading.setText("Dashboard");
         try {
-            content.getChildren().clear();
-            content.getChildren().add(FXMLLoader.load(Objects.requireNonNull(getClass().getClassLoader().getResource("fxml/Dashboard.fxml"))));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/Dashboard.fxml"));
+            setCenterScene(fxmlLoader);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    @FXML
     private void createNotificationButtonClicked() {
 
         System.out.println("Create Notification Button Clicked");
         mainHeading.setText("Create Notification");
         try {
-            content.getChildren().clear();
-            content.getChildren().add(FXMLLoader.load(Objects.requireNonNull(getClass().getClassLoader().getResource("fxml/CreateNotification.fxml"))));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/CreateNotification.fxml"));
+            setCenterScene(fxmlLoader);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    @FXML
     private void createGroupButtonClicked() {
         System.out.println("Create new Group Button Clicked");
         mainHeading.setText("Create Notification Group");
         try {
-            content.getChildren().clear();
-            content.getChildren().add(FXMLLoader.load(Objects.requireNonNull(getClass().getClassLoader().getResource("fxml/CreateGroup.fxml"))));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/CreateGroup.fxml"));
+            setCenterScene(fxmlLoader);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+    @FXML
     private void settingsButtonClicked() {
         System.out.println("Settings Button Clicked");
         mainHeading.setText("Settings");
         try {
-            content.getChildren().clear();
-            content.getChildren().add(FXMLLoader.load(Objects.requireNonNull(getClass().getClassLoader().getResource("fxml/Settings.fxml"))));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/settings.fxml"));
+            setCenterScene(fxmlLoader);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void setCenterScene(FXMLLoader fxmlLoader) throws Exception{
+        Pane pane = fxmlLoader.load();
+        AnchorPane.setTopAnchor(pane,0.0);
+        AnchorPane.setBottomAnchor(pane,0.0);
+        AnchorPane.setLeftAnchor(pane,0.0);
+        AnchorPane.setRightAnchor(pane,0.0);
+        content.getChildren().clear();
+        content.getChildren().add(pane);
     }
 }

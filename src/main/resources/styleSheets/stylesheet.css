@@ -27,13 +27,58 @@
     -fx-text-fill: #b4b4b4;
 }
 
-
-/*.tree-cell:expanded, .tree-cell:sub-tree-item {
-    -fx-background-color: #404040 ;
-}*/
-
 .tree-cell:selected {
     -fx-text-fill: white ;
     -fx-background-color: #00A2D3 ;
 }
 
+.container{
+   -fx-width: 100%;
+}
+
+
+.titled-pane:focused > .title > .arrow-button .arrow{
+    -fx-background-color: white;
+}
+
+.titled-pane > *.content{
+    -fx-background-color: transparent;
+}
+
+.titled-pane{
+    -fx-text-fill: #b4b4b4;
+    -fx-font-size: 18px;
+    -fx-background-color: transparent;
+}
+
+.titled-pane:focused > .title{
+    -fx-background-color:  #00A2D3 ;
+    -fx-text-fill: white;
+    -fx-title-fill: white;
+}
+
+.titled-pane > .title{
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+}
+
+.list-cell:filled:selected:focused, .list-cell:filled:selected {
+    -fx-text-fill: white;
+}
+
+.list-cell:even{
+    -fx-background-color: transparent;
+}
+
+.list-cell:filled:hover{
+    -fx-text-fill: white;
+}
+
+.list-cell{
+    -fx-background-color: transparent;
+    -fx-text-fill: #b4b4b4;
+}
+.list-view{
+    -fx-background-color: transparent;
+}
