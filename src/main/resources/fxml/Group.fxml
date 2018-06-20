@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.MenuButton?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane maxWidth="Infinity" prefHeight="460.0" prefWidth="269.0" stylesheets="@../styleSheets/singleGroupStyleSheet.css" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1">
+<right>
+   <VBox layoutX="525.0" layoutY="4.0" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" BorderPane.alignment="CENTER">
+         <children>
+            <HBox alignment="CENTER" VBox.vgrow="NEVER">
+               <children>
+      
+                   <Label fx:id="num_members" prefHeight="21.0" prefWidth="184.0" text="25 Members" />
+                  <MenuButton mnemonicParsing="false">
+                    <items>
+                     <MenuItem fx:id="renameMenuButton1" mnemonicParsing="false" onAction="#renameGroupButtonClicked" text="Invite Link" />
+                      <MenuItem fx:id="renameMenuButton" mnemonicParsing="false" onAction="#renameGroupButtonClicked" text="Rename" />
+                      <MenuItem fx:id="deleteMenuButton" mnemonicParsing="false" onAction="#deleteGroupButtonClicked" text="Delete Group" />
+                    </items>
+                     <graphic>
+                        <ImageView fitHeight="150.0" fitWidth="20.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../images/settings_icon.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </MenuButton>
+               </children>
+            <VBox.margin>
+               <Insets bottom="5.0" left="10.0" right="10.0" top="10.0" />
+            </VBox.margin>
+            </HBox>
+             <ListView fx:id="membersListView" prefHeight="400.0" prefWidth="249.0" stylesheets="@../styleSheets/singleGroupStyleSheet.css" VBox.vgrow="ALWAYS">
+            <VBox.margin>
+               <Insets bottom="10.0" left="10.0" right="10.0" top="5.0" />
+            </VBox.margin></ListView>
+         </children>
+         <BorderPane.margin>
+            <Insets />
+         </BorderPane.margin>
+      </VBox>
+</right>
+   <Separator layoutX="497.0" orientation="VERTICAL" prefHeight="431.0" prefWidth="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.topAnchor="0.0" />
+   <ListView prefHeight="422.0" prefWidth="487.0" />
+
+</BorderPane>

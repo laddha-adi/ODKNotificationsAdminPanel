@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="javafx" name="odk_notifications_main">
+    <output-path>$PROJECT_DIR$/out/artifacts/odk_notifications_main</output-path>
+    <root id="root">
+      <element id="archive" name="odk_notifications_main.jar">
+        <element id="module-output" name="odk_notifications_main" />
+      </element>
+    </root>
+  </artifact>
+</component>
