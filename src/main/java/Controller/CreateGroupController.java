@@ -3,9 +3,17 @@ package Controller;
 import Model.Group;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import javafx.concurrent.Task;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
@@ -17,9 +25,15 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpConnectionParams;
 import org.json.JSONObject;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import static Data.LoginData.ANDROID_APP_PACKAGE_NAME;
 import static Data.LoginData.DYNAMIC_LINK_DOMAIN;
 import static Data.LoginData.FIREBASE_INVITES_URL;
@@ -29,7 +43,9 @@ public class CreateGroupController implements Initializable {
     public ProgressIndicator progressIndicator;
     public Label statusLabel;
     public Button clipboardButton;
+    public ImageView qrView;
     private String groupLink;
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -37,8 +53,10 @@ public class CreateGroupController implements Initializable {
     }
 
     public void createButtonClicked(MouseEvent mouseEvent) {
-        progressIndicator.setProgress(-1.0f);
         progressIndicator.setVisible(true);
+        qrView.setImage(null);
+        clipboardButton.setText("Copy to clipboard");
+        clipboardButton.setVisible(false);
 
         if (mouseEvent.getClickCount() == 1)
             if (!name_field.getText().trim().equals("")) {
@@ -120,7 +138,7 @@ public class CreateGroupController implements Initializable {
                    JSONObject responseJSON = new JSONObject(result.toString());
                    groupLink = responseJSON.getString("shortLink");
                    progressIndicator.setVisible(false);
-
+                   createQRCode(groupLink);
               }
 
          } catch (Exception e) {
@@ -138,6 +156,39 @@ public class CreateGroupController implements Initializable {
             clipboard.setContent(content);
             clipboardButton.setText("Copied");
         }
+    }
+
+    public void createQRCode(String groupLink){
+        QRCodeWriter qrCodeWriter = new QRCodeWriter();
+        int width = 300;
+        int height = 300;
+        String fileType = "png";
+
+        BufferedImage bufferedImage = null;
+        try {
+            BitMatrix byteMatrix = qrCodeWriter.encode(groupLink, BarcodeFormat.QR_CODE, width, height);
+            bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+            bufferedImage.createGraphics();
+
+            Graphics2D graphics = (Graphics2D) bufferedImage.getGraphics();
+            graphics.setColor(Color.WHITE);
+            graphics.fillRect(0, 0, width, height);
+            graphics.setColor(Color.BLACK);
+
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    if (byteMatrix.get(i, j)) {
+                        graphics.fillRect(i, j, 1, 1);
+                    }
+                }
+            }
+
+            System.out.println("Success...");
+
+        } catch (WriterException ex) {
+            Logger.getLogger(CreateGroupController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        qrView.setImage(SwingFXUtils.toFXImage(bufferedImage, null));
     }
 }
 
