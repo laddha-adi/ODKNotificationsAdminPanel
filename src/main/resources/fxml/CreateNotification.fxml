@@ -24,14 +24,18 @@
                   <Insets top="10.0" />
                </VBox.margin></Label>
              <TextField fx:id="message_field" prefHeight="31.0" prefWidth="450.0" />
-            <RadioButton mnemonicParsing="false" text="Send to All">
-               <opaqueInsets>
-                  <Insets />
-               </opaqueInsets>
-               <padding>
-                  <Insets top="20.0" />
-               </padding>
-            </RadioButton>
+            <HBox>
+               <children>
+                  <RadioButton mnemonicParsing="false" text="Send to All">
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                     <padding>
+                        <Insets top="20.0" />
+                     </padding>
+                  </RadioButton>
+               </children>
+            </HBox>
             <HBox alignment="CENTER_LEFT" prefWidth="560.0">
                <children>
                   <Button fx:id="send_button" mnemonicParsing="false" onMouseClicked="#sendButtonClicked" prefHeight="31.0" prefWidth="60.0" text="Send" />

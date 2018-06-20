@@ -121,7 +121,7 @@ public class MainController implements Initializable {
                     }
                     Group newGroup = new Group((String)singleGroup.child("id").getValue(),(String)singleGroup.child("name").getValue(),workerIdArrayList);
                     groupArrayList.add(newGroup);
-                    System.out.println(newGroup.getName());
+                    //System.out.println(newGroup.getName());
                 }
 
                 listView.setItems(FXCollections.observableList(groupArrayList));
@@ -138,7 +138,7 @@ public class MainController implements Initializable {
     private void updateListView(ArrayList<String> groupsNames) {
         ObservableList<String>observableList = FXCollections.observableList(groupsNames);
        // listView.setItems(observableList);
-        System.out.print(String.valueOf(groupsNames));
+       // System.out.println(String.valueOf(groupsNames));
     }
 
     @FXML
