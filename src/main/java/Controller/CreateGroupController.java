@@ -18,6 +18,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.FileChooser;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -26,6 +27,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpConnectionParams;
 import org.json.JSONObject;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -44,12 +46,17 @@ public class CreateGroupController implements Initializable {
     public Label statusLabel;
     public Button clipboardButton;
     public ImageView qrView;
+    public Button saveImageButton;
+    public Button createGroupButton;
     private String groupLink;
+    private String groupName;
+    private BufferedImage bufferedImage = null;
 
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         clipboardButton.setVisible(false);
+        saveImageButton.setVisible(false);
     }
 
     public void createButtonClicked(MouseEvent mouseEvent) {
@@ -57,46 +64,54 @@ public class CreateGroupController implements Initializable {
         qrView.setImage(null);
         clipboardButton.setText("Copy to clipboard");
         clipboardButton.setVisible(false);
+        groupLink = null;
+        groupName = null;
+        bufferedImage = null;
+        saveImageButton.setVisible(false);
 
-        if (mouseEvent.getClickCount() == 1)
-            if (!name_field.getText().trim().equals("")) {
+        if (mouseEvent.getClickCount() == 1) {
+            groupName = name_field.getText().toString().trim();
+            if (!groupName.equals("")) {
                 Task<Void> task = new Task<Void>() {
                     @Override
                     protected Void call() throws Exception {
                         updateMessage("Please Wait...");
-                        updateProgress(-1,100);
+                        updateProgress(-1, 100);
                         String name = name_field.getText();
-                        String link = createNewGroup(name);
-                        if(link!=null) {
-                            updateMessage("Group Link: " + link);
-                            updateProgress(100,100);
-                        }
-                        else{
+                        groupLink = createNewGroup(name);
+                        if (groupLink != null) {
+                            updateMessage("Group Link: " + groupLink);
+                            updateProgress(100, 100);
+                        } else {
                             updateMessage("There is some error in creating the group. Please try again.");
-                            updateProgress(0,100);
+                            updateProgress(0, 100);
                         }
                         return null;
                     }
                 };
-                task.setOnSucceeded(taskFinishEvent -> clipboardButton.setVisible(true));
+                task.setOnSucceeded(taskFinishEvent -> {
+                    clipboardButton.setVisible(true);
+                    saveImageButton.setVisible(true);
+                });
+
                 progressIndicator.progressProperty().bind(task.progressProperty());
                 statusLabel.textProperty().bind(task.messageProperty());
                 new Thread(task).start();
             }
+        }
     }
-
     private String createNewGroup(String groupName) {
 
         DatabaseReference groupRef = FirebaseDatabase.getInstance().getReference().child("group");
         DatabaseReference pushedPostRef = groupRef.push();
         groupRef.child(pushedPostRef.getKey()).setValueAsync(new Group(pushedPostRef.getKey(), groupName, null));
-        return createGroupLink(groupName, pushedPostRef.getKey());
+        return createGroupLink(pushedPostRef.getKey());
     }
 
-    private String createGroupLink(String groupName, String groupId) {
+    private String createGroupLink( String groupId) {
         String link = null;
         try {
-             link = createDynamicLink(groupName, groupId);
+             link = createDynamicLink(groupId);
             System.out.println("LINK: " + link);
         } catch (Exception e) {
             e.printStackTrace();
@@ -104,13 +119,13 @@ public class CreateGroupController implements Initializable {
         return link;
     }
 
-    private String createDynamicLink(String groupName, String groupId) {
+    private String createDynamicLink(String groupId) {
 
         JSONObject androidInfo = new JSONObject();
         androidInfo.put("androidPackageName", ANDROID_APP_PACKAGE_NAME);
         JSONObject dynamicLinkInfo = new JSONObject();
         dynamicLinkInfo.put("dynamicLinkDomain", DYNAMIC_LINK_DOMAIN);
-        dynamicLinkInfo.put("link", "https://odknotificatons/id="+groupId);
+        dynamicLinkInfo.put("link", "https://odknotificatons?id="+groupId);
         dynamicLinkInfo.put("androidInfo", androidInfo);
 
         JSONObject mainObject = new JSONObject();
@@ -158,13 +173,12 @@ public class CreateGroupController implements Initializable {
         }
     }
 
-    public void createQRCode(String groupLink){
+    private void createQRCode(String groupLink){
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
         int width = 300;
         int height = 300;
         String fileType = "png";
 
-        BufferedImage bufferedImage = null;
         try {
             BitMatrix byteMatrix = qrCodeWriter.encode(groupLink, BarcodeFormat.QR_CODE, width, height);
             bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -189,6 +203,19 @@ public class CreateGroupController implements Initializable {
             Logger.getLogger(CreateGroupController.class.getName()).log(Level.SEVERE, null, ex);
         }
         qrView.setImage(SwingFXUtils.toFXImage(bufferedImage, null));
+    }
+
+    private void saveQRCodeImage(String groupName){
+        File outputfile = new File(groupName+".jpg");
+        try {
+            ImageIO.write(bufferedImage, "jpg", outputfile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void saveImageButtonClicked(MouseEvent mouseEvent) {
+        if(bufferedImage!=null) saveQRCodeImage(groupName);
     }
 }
 

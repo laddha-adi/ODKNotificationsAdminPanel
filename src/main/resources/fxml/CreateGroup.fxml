@@ -21,7 +21,7 @@
                 <TextField fx:id="name_field" prefHeight="31.0" prefWidth="450.0" />
                 <HBox alignment="CENTER_LEFT" prefWidth="560.0">
                     <children>
-                        <Button fx:id="create_button" mnemonicParsing="false" onMouseClicked="#createButtonClicked" prefHeight="31.0" prefWidth="117.0" text="Create" />
+                        <Button fx:id="createGroupButton" mnemonicParsing="false" onMouseClicked="#createButtonClicked" prefHeight="31.0" prefWidth="117.0" text="Create" />
                         <ProgressIndicator fx:id="progressIndicator" prefHeight="31.0" prefWidth="63.0" progress="0.0" visible="false">
                             <HBox.margin>
                                 <Insets left="20.0" right="20.0" />
@@ -37,12 +37,13 @@
                         <Insets bottom="10.0" top="5.0" />
                     </VBox.margin>
                <children>
-                        <Label fx:id="statusLabel" prefHeight="21.0" prefWidth="568.0" />
-                  <Button fx:id="clipboardButton" onMouseClicked="#copyToClipboardClicked" pickOnBounds="true" prefHeight="31.0" prefWidth="184.0" scaleShape="false" style="-fx-background-image: images/ic_action_attach.png;" text="Copy to clipboard">
+                        <Label fx:id="statusLabel" prefHeight="21.0" prefWidth="678.0" />
+                  <Button fx:id="clipboardButton" onMouseClicked="#copyToClipboardClicked" prefHeight="31.0" prefWidth="218.0" scaleShape="false" text="Copy to clipboard">
                   </Button>
                </children>
                 </HBox>
-            <ImageView fx:id="qrView" fitHeight="267.0" fitWidth="373.0" pickOnBounds="true" preserveRatio="true" />
+            <ImageView fx:id="qrView" fitHeight="267.0" fitWidth="361.0" pickOnBounds="true" preserveRatio="true" />
+            <Button fx:id="saveImageButton" mnemonicParsing="false" onMouseClicked="#saveImageButtonClicked" prefHeight="31.0" prefWidth="122.0" text="Save As Image" />
             </children>
         </VBox>
     </children>
